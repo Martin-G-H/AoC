@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, collections::BTreeMap};
 
 use nom::{IResult, multi::separated_list1, character::complete::{line_ending, digit1, space1}, sequence::{preceded, separated_pair, delimited, tuple}, bytes::{streaming::tag}, number::complete};
 
@@ -11,12 +11,7 @@ struct Card {
 
 impl Card {
     fn score(&self) -> usize{
-        let power = self.numbers.iter().filter(|num| self.winning.contains(&num)).count() as u32;
-        if power == 0 {
-            0
-        } else {
-            2usize.pow(power - 1)
-        }
+        self.numbers.iter().filter(|num| self.winning.contains(&num)).count()
     }
 }
 
@@ -41,7 +36,18 @@ fn parse_nums(input: &str) -> IResult<&str, Vec<usize>>{
 
 fn solution(file: &str) -> usize {
     let (_, cards) = parse_cards(file).expect("Should Parse");
-    cards.iter().map(|card| card.score()).sum()
+    let add = (0..cards.len()).map(|index| (index, 1)).collect::<BTreeMap<usize, usize>>();
+    let res = cards.iter().enumerate().fold(add, |mut acc, (index, card)| {
+        let score = card.score();
+        let add_amount = *acc.get(&(index)).unwrap();
+        for i in (index+1)..(index+1 + score) {
+            acc.entry(i).and_modify(|amount| {
+                *amount += add_amount;
+            });
+        }
+        acc
+    }).values().sum::<usize>();
+    res
 }
 
 
