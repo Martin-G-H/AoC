@@ -29,6 +29,10 @@ impl Group {
     fn set_symbol (&mut self, val: &char) {
         self.symbol = *val;
     }
+
+    fn get_number (self) -> usize{
+        self.num.iter().fold(String::new(), |acc, num| acc.add(&num.n.to_string())).parse::<usize>().unwrap()
+    }
 }
 
 fn main() {
@@ -36,7 +40,7 @@ fn main() {
     println!("{}", solution(&file));
 } 
 
-fn parse(file: &str) -> Option<Vec<Group>> {
+fn parse(file: &str) -> usize {
     let mut sum = 0;
     let mut groups: Vec<Group> = Vec::new();
     let grid: Vec<Vec<char>> = file
@@ -62,17 +66,17 @@ fn parse(file: &str) -> Option<Vec<Group>> {
         });
 
     for (r, row) in grid.iter().enumerate() {
-        for (c, val) in row.iter().enumerate().filter(|(_, &val)| {val != '.' && !val.is_ascii_digit()}) {
-            for group in groups.iter().filter(|&group| group.num.iter().any(|num| num.pos.adjacent(r, c))) {
-                sum += group.num.iter().fold(String::new(), |acc, num| acc.add(&num.n.to_string())).parse::<usize>().unwrap();
-            };
+        for (c, val) in row.iter().enumerate().filter(|(_, &val)| {val == '*'}) {
+            let gears: Vec<&Group> = groups.iter().filter(|group| group.num.iter().any(|num| num.pos.adjacent(r, c))).collect();
+            if gears.len() == 2 {
+                sum += gears.iter().map(|&group| group.clone().get_number()).product::<usize>();
+            }
         }
     }
-    dbg!(sum);
-    Some(groups)
+    dbg!(sum)
 }
 
-fn solution(file: &str) -> u32 {
-    let mut groups = parse(file);
-    todo!();
+fn solution(file: &str) -> usize {
+    let groups = parse(file);
+    return groups;
 }
