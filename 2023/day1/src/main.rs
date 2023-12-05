@@ -13,13 +13,13 @@ fn part1(file: &str) -> u32 {
         .map(|item| item
             .chars()
             .filter(|n| ('0'..='9').contains(n))
-            .collect::<Vec<char>>())
-        .map(|item| {
-                let a = item.first().unwrap();
-                let b = item.last().unwrap_or(a);
-                a.to_digit(10).unwrap() * 10 + b.to_digit(10).unwrap()
-            }
+            .collect::<Vec<char>>()
         )
+        .map(|item| {
+            let a = item.first().unwrap();
+            let b = item.last().unwrap_or(a);
+            a.to_digit(10).unwrap() * 10 + b.to_digit(10).unwrap()
+        })
         .sum::<u32>();
     return result;
 }
