@@ -15,6 +15,9 @@ bench day part:
 create day:
     cargo generate --path ./daily-template --name {{day}}
     just get-input {{day}}
+run day part:
+    cargo run -p {{day}} {{part}}
+
 
 # You can find SESSION by using Chrome tools:
 # 1) Go to https://adventofcode.com/2022/day/1/input
