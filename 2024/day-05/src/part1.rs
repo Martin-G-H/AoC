@@ -1,3 +1,6 @@
+use std::collections::HashSet;
+
+use itertools::Itertools;
 use miette::miette;
 use nom::{
     bytes::complete::tag,
@@ -18,33 +21,44 @@ fn parse_update(input: &str) -> IResult<&str, Vec<Vec<i32>>> {
     separated_list0(tag("\n"), separated_list0(tag(","), complete::i32))(input)
 }
 
-fn check_order(num: i32, orders: &Vec<(i32, i32)>, update: &Vec<i32>) -> bool {
-    let res = orders.iter().find(|(_, second)| *second == num);
-    match res {
-        Some(pair) => {
-            update.iter()
-        }
-        None => {
-            return true;
-        }
-    }
-    true
-}
-
 #[tracing::instrument]
 pub fn process(input: &str) -> miette::Result<String> {
-    let (_, (orders, updates)) = separated_pair(parse_ordering, tag("\n\n"), parse_update)(input)
+    let (_, (lorders, updates)) = separated_pair(parse_ordering, tag("\n\n"), parse_update)(input)
         .map_err(|e| miette!("parse failed {}", e))?;
 
-    let sum: i32 = updates
+    let mut orders: HashSet<(i32, i32)> = HashSet::new();
+    for (first, second) in lorders {
+        orders.insert((first, second));
+    }
+
+    let res: i32 = updates
         .iter()
-        .filter(|&update| update.iter().all(|num| check_order(*num, , &orders, &update)))
+        .filter(|&update| {
+            if update.is_empty() {
+                return false;
+            }
+            for i in 0..update.len() {
+                for j in i..update.len() {
+                    if i == j {
+                        continue;
+                    }
+                    let first = update.get(i).unwrap();
+                    let second = update.get(j).unwrap();
+                    if !orders.contains(&(*first, *second)) {
+                        return false;
+                    }
+                }
+            }
+            true
+        })
         .map(|update| {
-            let length = update.len();
-            update[length / 2]
+            // dbg!(&update);
+            // dbg!((update.len()) / 2);
+            update.get((update.len()) / 2).unwrap()
         })
         .sum();
-    Ok("3".to_string())
+
+    Ok(res.to_string())
 }
 
 #[cfg(test)]
