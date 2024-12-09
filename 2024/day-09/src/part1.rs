@@ -1,20 +1,13 @@
-use itertools::Itertools;
+use core::panic;
 
 #[tracing::instrument]
 pub fn process(_input: &str) -> miette::Result<String> {
     let input = _input.trim_end();
 
-    let disc_length: usize = input
-        .trim_end()
-        .chars()
-        .map(|char| char.to_digit(10).unwrap() as usize)
-        .sum();
-
     let mut empty_block: bool = false;
     let mut index: i32 = 0;
     let disc: Vec<i32> = input
         .chars()
-        .into_iter()
         .flat_map(|char| {
             let num = char.to_digit(10).unwrap() as usize;
             let ret: Vec<_>;
@@ -32,24 +25,26 @@ pub fn process(_input: &str) -> miette::Result<String> {
 
     let empty_slots = disc.iter().filter(|num| **num == -1).count();
 
-    let empty = disc
-        .iter()
+    let mut fillers = disc
+        .clone()
+        .into_iter()
         .rev()
-        .filter(|num| **num != -1)
-        .take(empty_slots);
+        .take(empty_slots)
+        .filter(|num| *num != -1);
 
-    // let checksum = disc.into_iter().enumerate().map(|(idx, num)| match num {
-    //     -1 => {
-    //         let (index, num) = rest.next().unwrap();
-    //         if index == idx {
-    //             todo!();
-    //         }
-    //         num
-    //     }
-    //     _ => num,
-    // });
-
-    dbg!(disc);
+    let mut checksum: u64 = 0;
+    for i in 0..(disc.len() - empty_slots) {
+        match disc.get(i) {
+            Some(val) => match val {
+                -1 => {
+                    let new = fillers.next().unwrap() as u64;
+                    checksum += i as u64 * new;
+                }
+                _ => checksum += i as u64 * *val as u64,
+            },
+            None => panic!("sdadas"),
+        }
+    }
     Ok(checksum.to_string())
 }
 
