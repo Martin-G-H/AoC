@@ -1,0 +1,10 @@
+with open("input.txt", "r") as f:
+
+    data = f.readlines()
+    data = [item.strip("\n").split(" ") for item in data]
+
+    print(data)
+
+    with open("output.txt", "w") as o:
+        o.close()
+    f.close()
