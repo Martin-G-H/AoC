@@ -1,0 +1,4 @@
+bin
+obj
+aoc-crypt.key
+*.env
